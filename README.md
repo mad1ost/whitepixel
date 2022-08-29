@@ -1,6 +1,6 @@
 # whitepixel on WebGL 2
 
-Based on [whitepixel](https://whitepixel.zorinaq.com/). Unlike the original version, it cracks passwords up to 15 characters long, not 8. It also does not use the precomputation of function I. 
+Based on [whitepixel](https://whitepixel.zorinaq.com/). Unlike the original version, it cracks passwords up to 15 characters long, not 8.
 
 
 ## How to try

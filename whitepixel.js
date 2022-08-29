@@ -24,7 +24,8 @@ function main() {
 	#define H(x, y, z) (x ^ (y ^ z))
 	#define I(x, y, z) (y ^ (x | ~z))
 
-	#define ROTATE_LEFT(x, n) ((x << n) | (x >> (32 - n)))
+	#define ROTATE_LEFT(x, n)  ((x << n) | (x >> (32 - n)))
+	#define ROTATE_RIGHT(x, n) ((x >> n) | (x << (32 - n)))
 
 	#define MD5_STEP(f, a, b, c, d, x, t, s) \
 	{ \
@@ -41,6 +42,23 @@ function main() {
 		a += f(b, c, d); \
 		a  = ROTATE_LEFT(a, s); \
 		a += b; \
+	}
+
+	#define MD5_STEP_REV(f, a, b, c, d, x, t, s) \
+	{ \
+		a -= b; \
+		a  = ROTATE_RIGHT(a, s); \
+		a -= f(b, c, d); \
+		a -= t; \
+		a -= x; \
+	}
+
+	#define MD5_STEP_REV0(f, a, b, c, d, x, s) \
+	{ \
+		a -= b; \
+		a  = ROTATE_RIGHT(a, s); \
+		a -= f(b, c, d); \
+		a -= x; \
 	}
 
 	uniform uvec4 searched;
@@ -69,7 +87,35 @@ function main() {
 
 		uint w14 = pw_len;
 
+		uvec4 s_rev = searched - uvec4(MD5_A, MD5_B, MD5_C, MD5_D);
+		uvec4 a_rev = uvec4(s_rev.x);
+		uvec4 b_rev = uvec4(s_rev.y);
+		uvec4 c_rev = uvec4(s_rev.z);
+		uvec4 d_rev = uvec4(s_rev.w);
+
+		MD5_STEP_REV0 (I, b_rev, c_rev, d_rev, a_rev,      0xeb86d391u, 21);
+		MD5_STEP_REV  (I, c_rev, d_rev, a_rev, b_rev,  w2, 0x2ad7d2bbu, 15);
+		MD5_STEP_REV0 (I, d_rev, a_rev, b_rev, c_rev,      0xbd3af235u, 10);
+		MD5_STEP_REV0 (I, a_rev, b_rev, c_rev, d_rev,      0xf7537e82u,  6);
+		MD5_STEP_REV0 (I, b_rev, c_rev, d_rev, a_rev,      0x4e0811a1u, 21);
+		MD5_STEP_REV0 (I, c_rev, d_rev, a_rev, b_rev,      0xa3014314u, 15);
+		MD5_STEP_REV0 (I, d_rev, a_rev, b_rev, c_rev,      0xfe2ce6e0u, 10);
+		MD5_STEP_REV0 (I, a_rev, b_rev, c_rev, d_rev,      0x6fa87e4fu,  6);
+		MD5_STEP_REV  (I, b_rev, c_rev, d_rev, a_rev,  w1, 0x85845dd1u, 21);
+		MD5_STEP_REV0 (I, c_rev, d_rev, a_rev, b_rev,      0xffeff47du, 15);
+		MD5_STEP_REV  (I, d_rev, a_rev, b_rev, c_rev,  w3, 0x8f0ccc92u, 10);
+		MD5_STEP_REV0 (I, a_rev, b_rev, c_rev, d_rev,      0x655b59c3u,  6);
+		MD5_STEP_REV0 (I, b_rev, c_rev, d_rev, a_rev,      0xfc93a039u, 21);
+		MD5_STEP_REV  (I, c_rev, d_rev, a_rev, b_rev, w14, 0xab9423a7u, 15);
+		MD5_STEP_REV0 (I, d_rev, a_rev, b_rev, c_rev,      0x432aff97u, 10);
+		MD5_STEP_REV0 (I, a_rev, b_rev, c_rev, d_rev,      0xf4292244u,  6);
+
 		for (uint i = 0u; i < il_cnt; i++) {
+
+			uvec4 pre_a = a_rev - w0;
+			uvec4 pre_b = b_rev;
+			uvec4 pre_c = c_rev;
+			uvec4 pre_d = d_rev;
 
 			uvec4 a = uvec4(MD5_A);
 			uvec4 b = uvec4(MD5_B);
@@ -123,49 +169,47 @@ function main() {
 			MD5_STEP  (H, c, d, a, b,  w3, 0xd4ef3085u, 16);
 			MD5_STEP0 (H, b, c, d, a,      0x04881d05u, 23);
 			MD5_STEP0 (H, a, b, c, d,      0xd9d4d039u,  4);
-			MD5_STEP0 (H, d, a, b, c,      0xe6db99e5u, 11);
-			MD5_STEP0 (H, c, d, a, b,      0x1fa27cf8u, 16);
-			MD5_STEP  (H, b, c, d, a,  w2, 0xc4ac5665u, 23);
 
-			MD5_STEP  (I, a, b, c, d,  w0, 0xf4292244u,  6);
-			MD5_STEP0 (I, d, a, b, c,      0x432aff97u, 10);
-			MD5_STEP  (I, c, d, a, b, w14, 0xab9423a7u, 15);
-			MD5_STEP0 (I, b, c, d, a,      0xfc93a039u, 21);
-			MD5_STEP0 (I, a, b, c, d,      0x655b59c3u,  6);
-			MD5_STEP  (I, d, a, b, c,  w3, 0x8f0ccc92u, 10);
-			MD5_STEP0 (I, c, d, a, b,      0xffeff47du, 15);
-			MD5_STEP  (I, b, c, d, a,  w1, 0x85845dd1u, 21);
-			MD5_STEP0 (I, a, b, c, d,      0x6fa87e4fu,  6);
-			MD5_STEP0 (I, d, a, b, c,      0xfe2ce6e0u, 10);
-			MD5_STEP0 (I, c, d, a, b,      0xa3014314u, 15);
-			MD5_STEP0 (I, b, c, d, a,      0x4e0811a1u, 21);
-			MD5_STEP0 (I, a, b, c, d,      0xf7537e82u,  6);
-			MD5_STEP0 (I, d, a, b, c,      0xbd3af235u, 10);
-			MD5_STEP  (I, c, d, a, b,  w2, 0x2ad7d2bbu, 15);
-			MD5_STEP0 (I, b, c, d, a,      0xeb86d391u, 21);
+			if (pre_a.x == a.x || pre_a.y == a.y || pre_a.z == a.z || pre_a.w == a.w) {
 
-			a += MD5_A;
-			b += MD5_B;
-			c += MD5_C;
-			d += MD5_D;
+				MD5_STEP0 (H, d, a, b, c,      0xe6db99e5u, 11);
+				MD5_STEP0 (H, c, d, a, b,      0x1fa27cf8u, 16);
+				MD5_STEP  (H, b, c, d, a,  w2, 0xc4ac5665u, 23);
 
-			if (all(equal(searched, uvec4(a.x, b.x, c.x, d.x)))) {
-				v_color = uvec4(uint(gl_VertexID), 0u, i, 1u);
-				gl_Position = vec4(.0, .0, .0, 1.);
-			}
-			if (all(equal(searched, uvec4(a.y, b.y, c.y, d.y)))) {
-				v_color = uvec4(uint(gl_VertexID), 1u, i, 1u);
-				gl_Position = vec4(.0, .0, .0, 1.);
-			}
-			if (all(equal(searched, uvec4(a.z, b.z, c.z, d.z)))) {
-				v_color = uvec4(uint(gl_VertexID), 2u, i, 1u);
-				gl_Position = vec4(.0, .0, .0, 1.);
-			}
-			if (all(equal(searched, uvec4(a.w, b.w, c.w, d.w)))) {
-				v_color = uvec4(uint(gl_VertexID), 3u, i, 1u);
-				gl_Position = vec4(.0, .0, .0, 1.);
-			}
+				MD5_STEP  (I, a, b, c, d,  w0, 0xf4292244u,  6);
+				MD5_STEP0 (I, d, a, b, c,      0x432aff97u, 10);
+				MD5_STEP  (I, c, d, a, b, w14, 0xab9423a7u, 15);
+				MD5_STEP0 (I, b, c, d, a,      0xfc93a039u, 21);
+				MD5_STEP0 (I, a, b, c, d,      0x655b59c3u,  6);
+				MD5_STEP  (I, d, a, b, c,  w3, 0x8f0ccc92u, 10);
+				MD5_STEP0 (I, c, d, a, b,      0xffeff47du, 15);
+				MD5_STEP  (I, b, c, d, a,  w1, 0x85845dd1u, 21);
+				MD5_STEP0 (I, a, b, c, d,      0x6fa87e4fu,  6);
+				MD5_STEP0 (I, d, a, b, c,      0xfe2ce6e0u, 10);
+				MD5_STEP0 (I, c, d, a, b,      0xa3014314u, 15);
+				MD5_STEP0 (I, b, c, d, a,      0x4e0811a1u, 21);
+				MD5_STEP0 (I, a, b, c, d,      0xf7537e82u,  6);
+				MD5_STEP0 (I, d, a, b, c,      0xbd3af235u, 10);
+				MD5_STEP  (I, c, d, a, b,  w2, 0x2ad7d2bbu, 15);
+				MD5_STEP0 (I, b, c, d, a,      0xeb86d391u, 21);
 
+				if (all(equal(s_rev, uvec4(a.x, b.x, c.x, d.x)))) {
+					v_color = uvec4(uint(gl_VertexID), 0u, i, 1u);
+					gl_Position = vec4(.0, .0, .0, 1.);
+				}
+				if (all(equal(s_rev, uvec4(a.y, b.y, c.y, d.y)))) {
+					v_color = uvec4(uint(gl_VertexID), 1u, i, 1u);
+					gl_Position = vec4(.0, .0, .0, 1.);
+				}
+				if (all(equal(s_rev, uvec4(a.z, b.z, c.z, d.z)))) {
+					v_color = uvec4(uint(gl_VertexID), 2u, i, 1u);
+					gl_Position = vec4(.0, .0, .0, 1.);
+				}
+				if (all(equal(s_rev, uvec4(a.w, b.w, c.w, d.w)))) {
+					v_color = uvec4(uint(gl_VertexID), 3u, i, 1u);
+					gl_Position = vec4(.0, .0, .0, 1.);
+				}
+			}
 			w0.x += 1u;
 			if ((w0.x & 0xffu) == after_last_char.x) { // w0 first char
 				w0.x += chars_offset.x;
@@ -196,7 +240,6 @@ function main() {
 			f_color = v_color;
 		}
 	`;
-
 	const prog = createProgram(gl, vs, fs);
 	if (!prog) return;
 
