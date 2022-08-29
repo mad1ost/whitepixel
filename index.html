@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="Decode MD5 online using WebGL 2 in your browser">
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	<link rel="stylesheet" href="pure-min.css">
+	<link rel="stylesheet" href="grids-responsive-min.css">
+	<link rel="stylesheet" href="style.css">
+	<script defer src="whitepixel.js"></script>
+	<title>Decode MD5 online</title>
+</head>
+<body>
+
+<div id="layout" class="pure-g">
+	<div class="sidebar pure-u-1 pure-u-md-1-4">
+		<div class="header">
+			<h1 class="title">Decode MD5 online</h1>
+			<h2 class="subtitle">using WebGL 2 in your browser</h2>
+		</div>
+	</div>
+	<div class="content pure-u-1 pure-u-md-3-4">
+		<form class="pure-form pure-form-stacked">
+			<fieldset>
+				<label for="hash">MD5 hash</label>
+				<input id="hash" size="32" value="">
+				<label for="pwlen">Password length</label>
+				<select id="pwlen">
+					<option>1</option>
+					<option>2</option>
+					<option>3</option>
+					<option>4</option>
+					<option>5</option>
+					<option selected="">6</option>
+					<option>7</option>
+					<option>8</option>
+					<option>9</option>
+					<option>10</option>
+					<option>11</option>
+					<option>12</option>
+					<option>13</option>
+					<option>14</option>
+					<option>15</option>
+				</select>
+				<label for="charset">Charset</label>
+				<select id="charset">
+					<option value="digit">all digits</option>
+					<option value="lower">all lowercase letters</option>
+					<option value="upper">all uppercase letters</option>
+					<option value="print"selected="">all printable characters of ASCII</option>
+					<!-- <option value="all">all bytes</option> -->
+				</select>
+			</fieldset>
+			<button id="button" type="button" class="pure-button pure-button-primary">Decode</button>
+			<p id="output">
+				<noscript>You need to enable JavaScript in your browser to use this site.</noscript>
+			</p>
+		</form>
+		<h3>Some results with default charset</h3>
+		<table class="results-table pure-table">
+			<thead>
+				<tr>
+					<th>Device</th>
+					<th>Speed, Mh/s</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>ATI Mobility Radeon HD 5650</td>
+					<td>225</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+
+</body>
+</html>
